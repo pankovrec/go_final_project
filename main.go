@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-
+	"db"
 )
 
 const (
@@ -10,7 +10,10 @@ const (
 )
 
 func main() {
+	db.StartDb()
+
 	startWeb()
+
 }
 
 func startWeb() {
