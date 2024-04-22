@@ -4,6 +4,8 @@ go 1.22.0
 
 replace db => ./db
 
+replace repeat => ./repeat
+
 require (
 	db v0.0.0-00010101000000-000000000000 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -26,4 +28,5 @@ require (
 	modernc.org/sqlite v1.29.7 // indirect
 	modernc.org/strutil v1.2.0 // indirect
 	modernc.org/token v1.1.0 // indirect
+	repeat v0.0.0-00010101000000-000000000000 // indirect
 )

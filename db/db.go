@@ -5,19 +5,12 @@ import (
 	"log"
 	"database/sql"
 	"path/filepath"
-	//"fmt"
 	
 	_ "modernc.org/sqlite"
 )
 
 const (
 	dbName = "scheduler.db"
-	SQL_CREATE_TABLES                     = "CREATE TABLE IF NOT EXISTS scheduler " +
-	"(id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	"date TEXT, " +
-	"title TEXT, " +
-	"comment TEXT, " +
-	"repeat VARCHAR(128));"
 )
 
 func StartDb(){
@@ -27,7 +20,7 @@ func StartDb(){
 	}
 	dbFile := filepath.Join(filepath.Dir(appPath), dbName)
 	_, err = os.Stat(dbFile)
-	log.Println("Ошибка. БД не существует. Делаем новую" + err.Error())
+	log.Println("Database not found. Creating new." + err.Error())
 	var install bool
 	if err != nil {
 		install = true
@@ -35,17 +28,23 @@ func StartDb(){
 	if install == true {
 		db, err := sql.Open("sqlite", dbName)
 		if err != nil {
-			log.Fatal("FAILED_TO_OPEN_DATABASE", err)
+			log.Fatal("Error open db.", err)
 		}
 		defer db.Close()
-		_, err = db.Exec(SQL_CREATE_TABLES);
+		_, err = db.Exec(`CREATE TABLE IF NOT EXISTS scheduler (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		date TEXT,
+		title TEXT,
+		comment TEXT,
+		repeat VARCHAR(128)
+		);`)
 		if err != nil {
-			log.Fatal("TABLE_CREATION_ERROR", err)
+			log.Fatal("Error create db", err)
 		
 	}
 	_, err = db.Exec("CREATE INDEX IF NOT EXISTS index_date ON scheduler (date);")
 	if err != nil {
-		log.Fatal("INDEX_CREATION_ERROR", err)
+		log.Fatal("Error create index", err)
 	}
 	}
 }
