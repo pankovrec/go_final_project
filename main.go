@@ -1,34 +1,32 @@
 package main
 
 import (
+	"database/sql"
+	"log"
 	"net/http"
-	"db"
-	"repeat"
-//	"github.com/go-chi/chi/v5"
-)
 
-const (
-	webDir string = "./web"
+	_ "modernc.org/sqlite"
 )
 
 func main() {
-	db.StartDb()
-//	r := chi.NewRouter()
-	//r.Mount("/", http.FileServer(http.Dir(webDir)))
-	//r.Get("/api/nextdate", repeat.ExtractParamsDate)
 
-	startWeb()
-	
-}
+	log.Println("[INFO] Connecting to database...")
+	db, err := sql.Open("sqlite", "scheduler.db")
+	checkDbError(err, "connection")
+	defer db.Close()
 
-func startWeb() {
-	http.Handle("/", http.FileServer(http.Dir(webDir)))
-	http.Handle("/api/nextdate", http.HandlerFunc(repeat.ExtractParamsDate))
+	s := NewStorage(db)
 
-//http.Handle("/", http.FileServer(http.Dir(webDir)))
+	s.InitDatabase()
 
-err := http.ListenAndServe(":7540", nil)
-if err != nil {
-	panic(err)
-}
+	t := NewTaskService(s)
+
+	http.Handle("/", http.FileServer(http.Dir("./web/")))
+	http.Handle("/api/nextdate", http.HandlerFunc(t.ExtractParamsDateHandler))
+	http.Handle("/api/task", http.HandlerFunc(t.TaskHandler))
+	http.Handle("GET /api/tasks", http.HandlerFunc(t.TasksHandler))
+	http.Handle("POST /api/task/done", http.HandlerFunc(t.DoneHandler))
+
+	log.Println("[INFO] Starting server on port 7540...")
+	log.Fatal(http.ListenAndServe(":7540", nil))
 }
